@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng Dẫn Xây Dựng Skill cho Claude</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0a0e1a;
+            --sidebar-bg: #0d1224;
+            --panel: #111827;
+            --border: #1a2035;
+            --border-light: #232d45;
+            --text: #b8c5d6;
+            --text-dim: #5a6a80;
+            --text-bright: #eef2f7;
+            --accent: #6366f1;
+            --accent2: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.12);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.78;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        ::selection {
+            background: rgba(99, 102, 241, 0.3);
+            color: #e0e7ff;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e2740;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2d3a56;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background: #0b1320;
+            border-right: 1px solid #163040;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 40;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-brand {
+            padding: 24px 20px;
+            border-bottom: 1px solid #163040;
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.06) 0%, rgba(6, 182, 212, 0.03) 100%);
+        }
+
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 12px rgba(6, 182, 212, 0.35);
+        }
+
+        .brand-icon svg {
+            width: 20px;
+            height: 20px;
+            color: #fff;
+            fill: none;
+            stroke: currentColor;
+        }
+
+        .brand-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            letter-spacing: -0.01em;
+        }
+
+        .brand-sub {
+            font-size: 0.68rem;
+            color: #22d3ee;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            margin-top: 1px;
+        }
+
+        .toc-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 12px 32px;
+        }
+
+        .toc-section-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #22d3ee;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            padding: 20px 10px 8px;
+        }
+
+        .toc-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: #67e8f9;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            line-height: 1.4;
+            position: relative;
+            border-left: 3px solid transparent;
+        }
+
+        .toc-link:hover {
+            color: #a5f3fc;
+            background: rgba(34, 211, 238, 0.08);
+            border-left-color: rgba(34, 211, 238, 0.5);
+        }
+
+        .toc-link.active {
+            color: #a5f3fc;
+            background: rgba(34, 211, 238, 0.12);
+            border-left-color: #22d3ee;
+            font-weight: 600;
+        }
+
+        .toc-link.active .toc-badge {
+            background: #0891b2;
+            color: #fff;
+            border-color: #22d3ee;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+        }
+
+        .toc-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            background: #0f1d2f;
+            border: 1px solid #1a3a4a;
+            color: #67e8f9;
+            font-size: 0.65rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+            letter-spacing: 0.02em;
+        }
+
+        .toc-emoji {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        /* ===== MAIN ===== */
+        .main {
+            flex: 1;
+            margin-left: 280px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* Top gradient accent line */
+        .top-line {
+            height: 2px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa, #6366f1);
+            background-size: 200% 100%;
+            animation: gradientShift 4s ease infinite;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .content-wrapper {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 24px 48px 80px;
+        }
+
+        /* ===== STICKY HERO TITLE ===== */
+        .sticky-hero {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: rgba(10, 14, 26, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 28px 48px 20px;
+            max-width: 780px;
+            margin: 0 auto;
+        }
+
+        .sticky-hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 48px;
+            right: 48px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.4), rgba(249, 115, 22, 0.3), transparent);
+        }
+
+        .sticky-hero h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin: 0;
+            line-height: 1.5;
+            padding-top: 0.15em;
+            overflow: visible;
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 35%, #ef4444 70%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ===== PROSE ===== */
+        .prose h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+            padding-top: 0.15em;
+            overflow: visible;
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 35%, #ef4444 70%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .prose h2 {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-top: 3.5rem;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--border);
+            letter-spacing: -0.02em;
+            scroll-margin-top: 90px;
+        }
+
+        .scroll-mt-8 {
+            scroll-margin-top: 90px;
+        }
+
+        .prose h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #a5b4fc;
+            margin-top: 2.5rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .prose h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #c4b5fd;
+            margin-top: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .prose p {
+            margin-bottom: 1.15rem;
+            font-size: 0.98rem;
+        }
+
+        .prose strong {
+            color: #eef2f7;
+            font-weight: 600;
+        }
+
+        .prose em {
+            color: #a5b4fc;
+        }
+
+        .prose a {
+            color: var(--accent2);
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(129, 140, 248, 0.3);
+            transition: all 0.2s;
+        }
+
+        .prose a:hover {
+            border-bottom-color: var(--accent2);
+        }
+
+        .prose ul,
+        .prose ol {
+            padding-left: 1.4rem;
+            margin-bottom: 1.15rem;
+        }
+
+        .prose li {
+            margin-bottom: 0.35rem;
+            font-size: 0.98rem;
+        }
+
+        .prose li::marker {
+            color: #4a5568;
+        }
+
+        /* Code */
+        .prose code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            color: #f0abfc;
+            background: rgba(240, 171, 252, 0.08);
+            padding: 0.15em 0.45em;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .prose pre {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(34, 211, 238, 0.12);
+            border-left: 3px solid;
+            border-image: linear-gradient(180deg, #22d3ee, #f59e0b) 1;
+            border-radius: 0 10px 10px 0;
+            padding: 1.2rem 1.4rem;
+            overflow-x: auto;
+            margin: 1.3rem 0;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+
+        .prose pre::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 12px;
+            right: 12px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.2), rgba(245, 158, 11, 0.15), transparent);
+        }
+
+        .prose pre code {
+            background: none;
+            color: #c9d1d9;
+            padding: 0;
+            font-size: 0.85em;
+            line-height: 1.65;
+        }
+
+        /* Blockquote */
+        .prose blockquote {
+            border-left: 3px solid var(--accent);
+            background: var(--accent-glow);
+            padding: 0.9rem 1.3rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.3rem 0;
+            color: #94a3b8;
+            font-style: normal;
+        }
+
+        .prose blockquote p {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Tables */
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            background: #0c1020;
+        }
+
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .prose table th {
+            background: rgba(99, 102, 241, 0.06);
+            color: #c4b5fd;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .prose table td {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid #141a2e;
+        }
+
+        .prose table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.012);
+        }
+
+        .prose table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .prose hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 2.5rem 0;
+        }
+
+        /* Back to top */
+        #back-to-top {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+
+        #back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #back-to-top:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+        }
+
+        #back-to-top svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Mobile */
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            z-index: 50;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-header h1 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .mobile-header button {
+            background: #1a2035;
+            border: none;
+            border-radius: 8px;
+            color: #7a8ba0;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 35;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main {
+                margin-left: 0;
+                padding-top: 52px;
+            }
+
+            .mobile-header {
+                display: flex;
+            }
+
+            .content-wrapper {
+                padding: 28px 20px 60px;
+            }
+
+            .prose h1 {
+                font-size: 1.5rem;
+            }
+
+            .prose h2 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mobile-header">
+        <h1>Claude Skills Guide</h1>
+        <button id="menuBtn" aria-label="Menu">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+        </button>
+    </div>
+    <div class="overlay" id="overlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-row">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="brand-title">Claude Skills</div>
+                    <div class="brand-sub">Documentation</div>
+                </div>
+            </div>
+        </div>
+        <nav class="toc-nav" id="tocNav">
+            <div class="toc-section-label">Bắt đầu</div>
+            <a href="#gioi-thieu" data-id="gioi-thieu" class="toc-link"><span class="toc-emoji">📖</span><span>Giới
+                    thiệu</span></a>
+            <div class="toc-section-label">Nội dung chính</div>
+            <a href="#chuong-1-nen-tang-co-ban-fundamentals" data-id="chuong-1-nen-tang-co-ban-fundamentals"
+                class="toc-link"><span class="toc-badge">01</span><span>Nền tảng cơ bản</span></a>
+            <a href="#chuong-2-lap-ke-hoach-va-thiet-ke-planning-and-design"
+                data-id="chuong-2-lap-ke-hoach-va-thiet-ke-planning-and-design" class="toc-link"><span
+                    class="toc-badge">02</span><span>Lập kế hoạch &amp; Thiết kế</span></a>
+            <a href="#chuong-3-kiem-thu-va-cai-tien-testing-and-iteration"
+                data-id="chuong-3-kiem-thu-va-cai-tien-testing-and-iteration" class="toc-link"><span
+                    class="toc-badge">03</span><span>Kiểm thử &amp; Cải tiến</span></a>
+            <a href="#chuong-4-phan-phoi-va-chia-se-distribution-and-sharing"
+                data-id="chuong-4-phan-phoi-va-chia-se-distribution-and-sharing" class="toc-link"><span
+                    class="toc-badge">04</span><span>Phân phối &amp; Chia sẻ</span></a>
+            <a href="#chuong-5-cac-pattern-va-xu-ly-su-co-patterns-and-troubleshooting"
+                data-id="chuong-5-cac-pattern-va-xu-ly-su-co-patterns-and-troubleshooting" class="toc-link"><span
+                    class="toc-badge">05</span><span>Patterns &amp; Xử lý sự cố</span></a>
+            <a href="#chuong-6-tai-nguyen-va-tham-khao-resources-and-references"
+                data-id="chuong-6-tai-nguyen-va-tham-khao-resources-and-references" class="toc-link"><span
+                    class="toc-badge">06</span><span>Tài nguyên &amp; Tham khảo</span></a>
+            <div class="toc-section-label">Phụ lục</div>
+            <a href="#phu-luc-a-checklist-nhanh" data-id="phu-luc-a-checklist-nhanh" class="toc-link"><span
+                    class="toc-badge">A</span><span>Checklist nhanh</span></a>
+            <a href="#phu-luc-b-yaml-frontmatter" data-id="phu-luc-b-yaml-frontmatter" class="toc-link"><span
+                    class="toc-badge">B</span><span>YAML Frontmatter</span></a>
+            <a href="#phu-luc-c-vi-du-skill-hoan-chinh" data-id="phu-luc-c-vi-du-skill-hoan-chinh"
+                class="toc-link"><span class="toc-badge">C</span><span>Ví dụ Skill hoàn chỉnh</span></a>
+        </nav>
+        <div style="padding:16px 20px;border-top:1px solid #163040;">
+            <a href="https://www.facebook.com/dotanminh/" target="_blank" rel="noopener noreferrer"
+                style="display:inline-flex;align-items:center;gap:8px;font-size:0.78rem;font-weight:600;color:#67e8f9;text-decoration:none;padding:8px 12px;border-radius:8px;background:rgba(34,211,238,0.06);border:1px solid rgba(34,211,238,0.1);transition:all 0.2s;width:100%;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#67e8f9">
+                    <path
+                        d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+                <span style="color:#f59e0b;font-weight:700;">Minh Đỗ</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="main" id="mainScroll">
+        <div class="top-line"></div>
+        <div class="sticky-hero">
+            <h1 id="huong-dan-toan-dien-xay-dung-skill-cho-claude">HƯỚNG DẪN TOÀN DIỆN XÂY DỰNG SKILL CHO CLAUDE</h1>
+        </div>
+        <div class="content-wrapper">
+            <div class="prose">
+                <hr />
+                <h2 id="muc-luc" class="scroll-mt-8">Mục Lục</h2>
+                <ul>
+                    <li><a href="#giới-thiệu">Giới thiệu</a></li>
+                    <li><a href="#chương-1-nền-tảng-cơ-bản-fundamentals">Chương 1: Nền tảng cơ bản (Fundamentals)</a>
+                    </li>
+                    <li><a href="#chương-2-lập-kế-hoạch-và-thiết-kế-planning-and-design">Chương 2: Lập kế hoạch và thiết
+                            kế (Planning and Design)</a></li>
+                    <li><a href="#chương-3-kiểm-thử-và-cải-tiến-testing-and-iteration">Chương 3: Kiểm thử và cải tiến
+                            (Testing and Iteration)</a></li>
+                    <li><a href="#chương-4-phân-phối-và-chia-sẻ-distribution-and-sharing">Chương 4: Phân phối và chia sẻ
+                            (Distribution and Sharing)</a></li>
+                    <li><a href="#chương-5-các-pattern-và-xử-lý-sự-cố-patterns-and-troubleshooting">Chương 5: Các
+                            Pattern và xử lý sự cố (Patterns and Troubleshooting)</a></li>
+                    <li><a href="#chương-6-tài-nguyên-và-tham-khảo-resources-and-references">Chương 6: Tài nguyên và
+                            tham khảo (Resources and References)</a></li>
+                    <li><a href="#phụ-lục-a-checklist-nhanh">Phụ lục A: Checklist nhanh</a></li>
+                    <li><a href="#phụ-lục-b-yaml-frontmatter">Phụ lục B: YAML Frontmatter</a></li>
+                    <li><a href="#phụ-lục-c-ví-dụ-skill-hoàn-chỉnh">Phụ lục C: Ví dụ Skill hoàn chỉnh</a></li>
+                </ul>
+                <hr />
+                <h2 id="gioi-thieu" class="scroll-mt-8">Giới thiệu</h2>
+                <p><strong>Skill</strong> là một tập hợp hướng dẫn - được đóng gói dưới dạng một folder đơn giản - giúp
+                    dạy Claude cách xử lý các tác vụ hoặc workflow (quy trình) cụ thể. Skill là một trong những cách
+                    mạnh mẽ nhất để tùy chỉnh Claude theo nhu cầu riêng của bạn. Thay vì phải giải thích lại sở thích,
+                    quy trình và kiến thức chuyên môn trong mỗi cuộc hội thoại, skill cho phép bạn <strong>dạy Claude
+                        một lần và hưởng lợi mãi mãi</strong>.</p>
+                <p>Skill đặc biệt mạnh khi bạn có các workflow (quy trình) lặp lại: tạo thiết kế frontend từ spec,
+                    nghiên cứu với phương pháp nhất quán, tạo tài liệu theo style guide của team, hoặc điều phối các quy
+                    trình nhiều bước. Chúng hoạt động tốt với các khả năng tích hợp sẵn của Claude như thực thi code và
+                    tạo tài liệu. Với những ai đang xây dựng MCP Integration (tích hợp MCP), skill bổ sung thêm một lớp
+                    mạnh mẽ - biến quyền truy cập tool thô thành các workflow đáng tin cậy, được tối ưu hóa.</p>
+                <p>Hướng dẫn này bao gồm mọi thứ bạn cần biết để xây dựng skill hiệu quả - từ lập kế hoạch và cấu trúc
+                    đến kiểm thử và phân phối. Dù bạn đang xây skill cho bản thân, cho team hay cho cộng đồng, bạn sẽ
+                    tìm thấy các pattern thực tế và ví dụ thực tế xuyên suốt.</p>
+                <h3 id="ban-se-hoc-uoc-gi" class="scroll-mt-8">Bạn sẽ học được gì:</h3>
+                <ul>
+                    <li>Yêu cầu kỹ thuật và best practice (thực hành tốt nhất) cho cấu trúc skill</li>
+                    <li>Các pattern cho standalone skill (skill độc lập) và MCP-enhanced workflow (quy trình nâng cao
+                        bằng MCP)</li>
+                    <li>Các pattern đã được chứng minh hiệu quả trên nhiều use case (trường hợp sử dụng) khác nhau</li>
+                    <li>Cách kiểm thử, cải tiến và phân phối skill</li>
+                </ul>
+                <h3 id="oi-tuong-phu-hop" class="scroll-mt-8">Đối tượng phù hợp:</h3>
+                <ul>
+                    <li>Developer muốn Claude tuân theo các workflow cụ thể một cách nhất quán</li>
+                    <li>Power user (người dùng nâng cao) muốn Claude tuân theo các workflow cụ thể</li>
+                    <li>Team muốn chuẩn hóa cách Claude hoạt động trong tổ chức</li>
+                </ul>
+                <h3 id="hai-lo-trinh-qua-huong-dan-nay" class="scroll-mt-8">Hai lộ trình qua hướng dẫn này</h3>
+                <ul>
+                    <li><strong>Xây dựng standalone skill (skill độc lập)?</strong> Tập trung vào Fundamentals (Nền
+                        tảng), Planning and Design (Lập kế hoạch &amp; Thiết kế) và Category (danh mục) 1-2.</li>
+                    <li><strong>Nâng cấp MCP Integration?</strong> Phần "Skills + MCP" và Category 3 dành cho bạn.</li>
+                </ul>
+                <p>Cả hai lộ trình đều chia sẻ cùng yêu cầu kỹ thuật, nhưng bạn chọn phần phù hợp với use case của mình.
+                </p>
+                <p><strong>Kết quả bạn đạt được:</strong> Cuối hướng dẫn, bạn sẽ có thể xây dựng một skill hoàn chỉnh
+                    trong một lần ngồi. Dự kiến khoảng <strong>15-30 phút</strong> để xây và test skill đầu tiên bằng
+                    skill-creator.</p>
+                <p>Bắt đầu thôi!</p>
+                <hr />
+                <h2 id="chuong-1-nen-tang-co-ban-fundamentals" class="scroll-mt-8">Chương 1: Nền tảng cơ bản
+                    (Fundamentals)</h2>
+                <h3 id="skill-la-gi" class="scroll-mt-8">Skill là gì?</h3>
+                <p>Một skill là một folder chứa:</p>
+                <ul>
+                    <li><strong><code>SKILL.md</code></strong> (bắt buộc): Hướng dẫn dạng Markdown với YAML Frontmatter
+                    </li>
+                    <li><strong><code>scripts/</code></strong> (tùy chọn): Code thực thi (Python, Bash, v.v.)</li>
+                    <li><strong><code>references/</code></strong> (tùy chọn): Tài liệu tham khảo, được tải khi cần</li>
+                    <li><strong><code>assets/</code></strong> (tùy chọn): Template (mẫu), font, icon dùng cho output
+                    </li>
+                </ul>
+                <h3 id="nguyen-tac-thiet-ke-cot-loi-core-design-principles" class="scroll-mt-8">Nguyên tắc thiết kế cốt
+                    lõi (Core Design Principles)</h3>
+                <h4 id="progressive-disclosure-tiet-lo-dan-dan" class="scroll-mt-8">Progressive Disclosure (Tiết lộ dần
+                    dần)</h4>
+                <p>Skill sử dụng hệ thống ba tầng:</p>
+                <ul>
+                    <li><strong>Tầng 1 (YAML Frontmatter):</strong> Luôn được tải vào system prompt của Claude. Cung cấp
+                        vừa đủ thông tin để Claude biết <strong>khi nào</strong> nên sử dụng skill mà không cần tải toàn
+                        bộ nội dung.</li>
+                    <li><strong>Tầng 2 (Phần thân SKILL.md):</strong> Được tải khi Claude cho rằng skill phù hợp với tác
+                        vụ hiện tại. Chứa toàn bộ hướng dẫn chi tiết.</li>
+                    <li><strong>Tầng 3 (File liên kết):</strong> Các file bổ sung trong thư mục skill mà Claude có thể
+                        chủ động khám phá khi cần.</li>
+                </ul>
+                <p>Cơ chế progressive disclosure này <strong>giảm thiểu token usage</strong> (lượng token sử dụng) trong
+                    khi vẫn duy trì chuyên môn chuyên sâu.</p>
+                <h4 id="composability-kha-nang-ket-hop" class="scroll-mt-8">Composability (Khả năng kết hợp)</h4>
+                <p>Claude có thể tải nhiều skill cùng lúc. Skill của bạn nên hoạt động tốt cùng với các skill khác,
+                    không nên giả định nó là khả năng duy nhất có sẵn.</p>
+                <h4 id="portability-tinh-di-ong" class="scroll-mt-8">Portability (Tính di động)</h4>
+                <p>Skill hoạt động giống nhau trên Claude.ai, Claude Code và API. Tạo skill một lần và nó hoạt động trên
+                    tất cả các nền tảng mà không cần chỉnh sửa, miễn là môi trường hỗ trợ các dependency (phụ thuộc) mà
+                    skill yêu cầu.</p>
+                <h3 id="danh-cho-mcp-builder-skills-connectors" class="scroll-mt-8">Dành cho MCP Builder: Skills +
+                    Connectors</h3>
+                <blockquote>
+                    <p>💡 Đang xây standalone skill (skill độc lập) mà không dùng MCP? Bỏ qua phần này và chuyển đến <a
+                            href="#chương-2-lập-kế-hoạch-và-thiết-kế-planning-and-design">Planning and Design</a> - bạn
+                        luôn có thể quay lại sau.</p>
+                </blockquote>
+                <p>Nếu bạn đã có MCP Server hoạt động, bạn đã làm xong phần khó nhất. Skill là <strong>lớp kiến
+                        thức</strong> phía trên - nắm bắt các workflow và best practice bạn đã biết, để Claude có thể áp
+                    dụng chúng một cách nhất quán.</p>
+                <h4 id="phep-so-sanh-nha-bep-the-kitchen-analogy" class="scroll-mt-8">Phép so sánh nhà bếp (The Kitchen
+                    Analogy)</h4>
+                <ul>
+                    <li><strong>MCP cung cấp nhà bếp chuyên nghiệp:</strong> quyền truy cập vào tool, nguyên liệu và
+                        thiết bị.</li>
+                    <li><strong>Skill cung cấp công thức nấu ăn:</strong> hướng dẫn từng bước cách tạo ra thứ gì đó có
+                        giá trị.</li>
+                </ul>
+                <p>Kết hợp lại, chúng cho phép người dùng hoàn thành các tác vụ phức tạp mà không cần tự tìm hiểu từng
+                    bước.</p>
+                <h4 id="cach-chung-hoat-ong-cung-nhau" class="scroll-mt-8">Cách chúng hoạt động cùng nhau:</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>MCP (Kết nối)</th>
+                            <th>Skill (Kiến thức)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Kết nối Claude với dịch vụ của bạn (Notion, Asana, Linear, v.v.)</td>
+                            <td>Dạy Claude cách sử dụng dịch vụ hiệu quả</td>
+                        </tr>
+                        <tr>
+                            <td>Cung cấp truy cập dữ liệu real-time (thời gian thực) và gọi tool</td>
+                            <td>Nắm bắt workflow và best practice</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Những gì</strong> Claude có thể làm</td>
+                            <td><strong>Cách</strong> Claude nên làm</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h4 id="tai-sao-ieu-nay-quan-trong-cho-nguoi-dung-mcp-cua-ban" class="scroll-mt-8">Tại sao điều này quan
+                    trọng cho người dùng MCP của bạn</h4>
+                <p><strong>Không có skill:</strong>
+                    - Người dùng kết nối MCP nhưng không biết làm gì tiếp
+                    - Ticket hỗ trợ hỏi "làm sao dùng X với integration của bạn"
+                    - Mỗi cuộc hội thoại bắt đầu từ đầu
+                    - Kết quả không nhất quán vì mỗi người prompt khác nhau
+                    - Người dùng đổ lỗi cho connector trong khi vấn đề thật sự là thiếu hướng dẫn workflow</p>
+                <p><strong>Có skill:</strong>
+                    - Workflow dựng sẵn tự động kích hoạt khi cần
+                    - Sử dụng tool nhất quán, đáng tin cậy
+                    - Best practice được nhúng trong mọi tương tác
+                    - Đường cong học tập thấp hơn cho integration của bạn</p>
+                <hr />
+                <h2 id="chuong-2-lap-ke-hoach-va-thiet-ke-planning-and-design" class="scroll-mt-8">Chương 2: Lập kế
+                    hoạch và thiết kế (Planning and Design)</h2>
+                <h3 id="bat-au-voi-use-case-truong-hop-su-dung" class="scroll-mt-8">Bắt đầu với Use Case (trường hợp sử
+                    dụng)</h3>
+                <p>Trước khi viết bất kỳ dòng code nào, hãy xác định 2-3 use case cụ thể mà skill của bạn cần hỗ trợ.
+                </p>
+                <p><strong>Ví dụ định nghĩa use case tốt:</strong></p>
+                <div class="highlight">
+                    <pre><span></span><code>Use Case: Lập kế hoạch Sprint dự án
+Trigger: Người dùng nói &quot;giúp tôi lập kế hoạch sprint&quot; hoặc &quot;tạo task sprint&quot;
+Các bước:
+1. Lấy trạng thái dự án hiện tại từ Linear (qua MCP)
+2. Phân tích velocity (tốc độ) và capacity (năng lực) của team
+3. Đề xuất ưu tiên task
+4. Tạo task trong Linear với label và estimate phù hợp
+Kết quả: Sprint được lên kế hoạch đầy đủ với các task đã tạo
+</code></pre>
+                </div>
+
+                <p><strong>Hãy tự hỏi:</strong>
+                    - Người dùng muốn hoàn thành điều gì?
+                    - Workflow nhiều bước nào cần thiết?
+                    - Cần tool nào (tích hợp sẵn hay MCP)?
+                    - Kiến thức chuyên môn hoặc best practice nào cần được nhúng?</p>
+                <h3 id="cac-danh-muc-use-case-pho-bien" class="scroll-mt-8">Các danh mục Use Case phổ biến</h3>
+                <p>Tại Anthropic, họ đã quan sát ba danh mục phổ biến:</p>
+                <h4 id="category-1-document-asset-creation-tao-tai-lieu-tai-san" class="scroll-mt-8">Category 1:
+                    Document &amp; Asset Creation (Tạo tài liệu &amp; tài sản)</h4>
+                <p><strong>Dùng cho:</strong> Tạo output chất lượng cao, nhất quán bao gồm tài liệu, bài thuyết trình,
+                    ứng dụng, thiết kế, code, v.v.</p>
+                <p><strong>Ví dụ thực tế:</strong> skill <code>frontend-design</code> (cũng xem skill cho docx, pptx,
+                    xlsx, và ppt)</p>
+                <blockquote>
+                    <p>"Tạo giao diện frontend production-grade (cấp sản xuất) đặc sắc với chất lượng thiết kế cao. Sử
+                        dụng khi xây dựng web component, page, artifact, poster hoặc ứng dụng."</p>
+                </blockquote>
+                <p><strong>Kỹ thuật chính:</strong>
+                    - Style guide và brand standard (tiêu chuẩn thương hiệu) được nhúng
+                    - Cấu trúc template cho output nhất quán
+                    - Checklist chất lượng trước khi hoàn thiện
+                    - Không cần tool bên ngoài - sử dụng khả năng tích hợp sẵn của Claude</p>
+                <h4 id="category-2-workflow-automation-tu-ong-hoa-quy-trinh" class="scroll-mt-8">Category 2: Workflow
+                    Automation (Tự động hóa quy trình)</h4>
+                <p><strong>Dùng cho:</strong> Quy trình nhiều bước hưởng lợi từ phương pháp nhất quán, bao gồm phối hợp
+                    giữa nhiều MCP Server.</p>
+                <p><strong>Ví dụ thực tế:</strong> skill <code>skill-creator</code></p>
+                <blockquote>
+                    <p>"Hướng dẫn tương tác để tạo skill mới. Dẫn dắt người dùng qua định nghĩa use case, tạo
+                        frontmatter, viết hướng dẫn và xác nhận."</p>
+                </blockquote>
+                <p><strong>Kỹ thuật chính:</strong>
+                    - Workflow từng bước với validation gate (cổng xác nhận)
+                    - Template cho các cấu trúc phổ biến
+                    - Đề xuất review và cải thiện tích hợp sẵn
+                    - Vòng lặp tinh chỉnh lặp đi lặp lại</p>
+                <h4 id="category-3-mcp-enhancement-nang-cap-mcp" class="scroll-mt-8">Category 3: MCP Enhancement (Nâng
+                    cấp MCP)</h4>
+                <p><strong>Dùng cho:</strong> Hướng dẫn workflow để nâng cao quyền truy cập tool mà MCP Server cung cấp.
+                </p>
+                <p><strong>Ví dụ thực tế:</strong> skill <code>sentry-code-review</code> (từ Sentry)</p>
+                <blockquote>
+                    <p>"Tự động phân tích và sửa bug được phát hiện trong GitHub Pull Request bằng dữ liệu giám sát lỗi
+                        của Sentry qua MCP Server."</p>
+                </blockquote>
+                <p><strong>Kỹ thuật chính:</strong>
+                    - Phối hợp nhiều lệnh gọi MCP theo tuần tự
+                    - Nhúng chuyên môn lĩnh vực
+                    - Cung cấp context (ngữ cảnh) mà người dùng thường phải tự chỉ định
+                    - Xử lý lỗi cho các vấn đề MCP phổ biến</p>
+                <h3 id="inh-nghia-tieu-chi-thanh-cong-success-criteria" class="scroll-mt-8">Định nghĩa tiêu chí thành
+                    công (Success Criteria)</h3>
+                <p>Làm sao biết skill đang hoạt động tốt?</p>
+                <p>Đây là các mục tiêu tham khảo - benchmark (chuẩn so sánh) ước tính hơn là ngưỡng chính xác. Hãy hướng
+                    tới sự nghiêm ngặt nhưng chấp nhận rằng sẽ có yếu tố đánh giá dựa trên cảm nhận.</p>
+                <h4 id="metric-inh-luong-quantitative" class="scroll-mt-8">Metric định lượng (Quantitative):</h4>
+                <ul>
+                    <li><strong>Skill trigger (kích hoạt) đúng 90% các truy vấn liên quan</strong></li>
+                    <li><em>Cách đo:</em> Chạy 10-20 test query cần trigger skill. Theo dõi số lần nó tự tải vs. cần gọi
+                        thủ công.</li>
+                    <li><strong>Hoàn thành workflow trong X tool call</strong></li>
+                    <li><em>Cách đo:</em> So sánh cùng một tác vụ có và không có skill. Đếm số tool call và tổng token
+                        tiêu thụ.</li>
+                    <li><strong>0 API call thất bại mỗi workflow</strong></li>
+                    <li><em>Cách đo:</em> Giám sát log MCP Server trong các lần chạy test. Theo dõi tỷ lệ retry và error
+                        code.</li>
+                </ul>
+                <h4 id="metric-inh-tinh-qualitative" class="scroll-mt-8">Metric định tính (Qualitative):</h4>
+                <ul>
+                    <li><strong>Người dùng không cần prompt Claude về bước tiếp theo</strong></li>
+                    <li><em>Cách đánh giá:</em> Trong quá trình test, ghi chú số lần cần redirect hoặc làm rõ. Hỏi beta
+                        user feedback.</li>
+                    <li><strong>Workflow hoàn thành mà không cần người dùng sửa</strong></li>
+                    <li><em>Cách đánh giá:</em> Chạy cùng một request 3-5 lần. So sánh output về tính nhất quán cấu trúc
+                        và chất lượng.</li>
+                    <li><strong>Kết quả nhất quán giữa các session (phiên)</strong></li>
+                    <li><em>Cách đánh giá:</em> Người dùng mới có thể hoàn thành tác vụ ngay lần đầu với hướng dẫn tối
+                        thiểu không?</li>
+                </ul>
+                <h3 id="yeu-cau-ky-thuat-technical-requirements" class="scroll-mt-8">Yêu cầu kỹ thuật (Technical
+                    Requirements)</h3>
+                <h4 id="cau-truc-file" class="scroll-mt-8">Cấu trúc file</h4>
+                <div class="highlight">
+                    <pre><span></span><code>your-skill-name/
+├── SKILL.md              # Bắt buộc - file skill chính
+├── scripts/              # Tùy chọn - code thực thi
+│   ├── process_data.py   # Ví dụ
+│   └── validate.sh       # Ví dụ
+├── references/           # Tùy chọn - tài liệu
+│   ├── api-guide.md      # Ví dụ
+│   └── examples/         # Ví dụ
+└── assets/               # Tùy chọn - template, v.v.
+    └── report-template.md # Ví dụ
+</code></pre>
+                </div>
+
+                <h4 id="quy-tac-quan-trong-critical-rules" class="scroll-mt-8">Quy tắc quan trọng (Critical Rules)</h4>
+                <p><strong>Đặt tên SKILL.md:</strong>
+                    - Phải đúng chính xác <code>SKILL.md</code> (phân biệt hoa thường / case-sensitive)
+                    - Không chấp nhận biến thể (SKILL.MD, skill.md, v.v.)</p>
+                <p><strong>Đặt tên folder skill:</strong>
+                    - Dùng kebab-case: <code>notion-project-setup</code> ✅
+                    - Không dùng dấu cách: <code>Notion Project Setup</code> ❌
+                    - Không dùng gạch dưới: <code>notion_project_setup</code> ❌
+                    - Không viết hoa: <code>NotionProjectSetup</code> ❌</p>
+                <p><strong>Không dùng README.md:</strong>
+                    - Không đặt README.md bên trong folder skill
+                    - Tất cả tài liệu vào <code>SKILL.md</code> hoặc <code>references/</code>
+                    - Lưu ý: khi phân phối qua GitHub, bạn vẫn cần README cấp repo cho người dùng - xem phần
+                    Distribution and Sharing.</p>
+                <h4 id="yaml-frontmatter-phan-quan-trong-nhat" class="scroll-mt-8">YAML Frontmatter: Phần quan trọng
+                    nhất</h4>
+                <p>YAML Frontmatter là cách Claude quyết định có nên tải skill hay không. Hãy làm đúng phần này.</p>
+                <p><strong>Format tối thiểu bắt buộc:</strong></p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="nn">---</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">your-skill-name</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Nó làm gì. Sử dụng khi người dùng yêu cầu [cụm từ cụ thể].</span>
+<span class="nn">---</span>
+</code></pre>
+                </div>
+
+                <p>Đó là tất cả những gì bạn cần để bắt đầu.</p>
+                <p><strong>Yêu cầu các field:</strong></p>
+                <ul>
+                    <li><strong><code>name</code></strong> (bắt buộc):</li>
+                    <li>Chỉ kebab-case</li>
+                    <li>Không dấu cách hay chữ hoa</li>
+                    <li>
+                        <p>Nên trùng tên folder</p>
+                    </li>
+                    <li>
+                        <p><strong><code>description</code></strong> (bắt buộc):</p>
+                    </li>
+                    <li>PHẢI bao gồm CẢ HAI: skill làm gì + khi nào dùng (trigger condition)</li>
+                    <li>Dưới 1024 ký tự</li>
+                    <li>Không dùng XML tag (<code>&lt;</code> hoặc <code>&gt;</code>)</li>
+                    <li>Bao gồm các tác vụ cụ thể người dùng có thể nói</li>
+                    <li>
+                        <p>Đề cập loại file nếu liên quan</p>
+                    </li>
+                    <li>
+                        <p><strong><code>license</code></strong> (tùy chọn): Dùng nếu open source. Phổ biến: MIT,
+                            Apache-2.0</p>
+                    </li>
+                    <li>
+                        <p><strong><code>compatibility</code></strong> (tùy chọn): 1-500 ký tự. Chỉ ra yêu cầu môi
+                            trường.</p>
+                    </li>
+                    <li>
+                        <p><strong><code>metadata</code></strong> (tùy chọn): Bất kỳ cặp key-value tùy chỉnh. Đề xuất:
+                            author, version, mcp-server.</p>
+                    </li>
+                </ul>
+                <div class="highlight">
+                    <pre><span></span><code><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">author</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ProjectHub</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0.0</span>
+<span class="w">  </span><span class="nt">mcp-server</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">projecthub</span>
+</code></pre>
+                </div>
+
+                <h4 id="han-che-bao-mat-security-restrictions" class="scroll-mt-8">Hạn chế bảo mật (Security
+                    Restrictions)</h4>
+                <p><strong>Cấm trong frontmatter:</strong>
+                    - Dấu ngoặc nhọn XML (<code>&lt; &gt;</code>)
+                    - Skill có tên chứa "claude" hoặc "anthropic" (đã được đặt trước / reserved)</p>
+                <p><strong>Lý do:</strong> Frontmatter xuất hiện trong system prompt của Claude. Nội dung độc hại có thể
+                    inject (tiêm) hướng dẫn.</p>
+                <h3 id="viet-skill-hieu-qua" class="scroll-mt-8">Viết Skill hiệu quả</h3>
+                <h4 id="field-description" class="scroll-mt-8">Field <code>description</code></h4>
+                <p>Theo blog kỹ thuật của Anthropic: <em>"Metadata này... cung cấp vừa đủ thông tin để Claude biết khi
+                        nào nên sử dụng mỗi skill mà không cần tải toàn bộ vào context."</em> Đây là tầng đầu tiên của
+                    progressive disclosure.</p>
+                <p><strong>Cấu trúc:</strong> <code>[Nó làm gì] + [Khi nào dùng] + [Khả năng chính]</code></p>
+                <p><strong>Ví dụ description tốt:</strong></p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="c1"># Tốt - cụ thể và actionable (có thể hành động)</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Phân tích file thiết kế Figma và tạo tài liệu handoff</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">cho developer. Sử dụng khi người dùng upload file .fig, yêu cầu</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">&quot;design specs&quot;, &quot;component documentation&quot;, hoặc &quot;design-to-code handoff&quot;.</span>
+
+<span class="c1"># Tốt - có trigger phrase (cụm từ kích hoạt)</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Quản lý workflow dự án Linear bao gồm sprint planning,</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">tạo task và theo dõi trạng thái. Sử dụng khi người dùng nhắc đến</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">&quot;sprint&quot;, &quot;Linear tasks&quot;, &quot;project planning&quot;, hoặc yêu cầu &quot;create tickets&quot;.</span>
+
+<span class="c1"># Tốt - value proposition (giá trị đề xuất) rõ ràng</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Workflow onboard khách hàng end-to-end cho PayFlow.</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">Xử lý tạo tài khoản, thiết lập thanh toán và quản lý subscription.</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">Sử dụng khi người dùng nói &quot;onboard new customer&quot;, &quot;set up subscription&quot;,</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">hoặc &quot;create PayFlow account&quot;.</span>
+</code></pre>
+                </div>
+
+                <p><strong>Ví dụ description xấu:</strong></p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="c1"># Quá mơ hồ</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Giúp với dự án.</span>
+
+<span class="c1"># Thiếu trigger</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Tạo hệ thống tài liệu nhiều trang phức tạp.</span>
+
+<span class="c1"># Quá kỹ thuật, không có user trigger</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Triển khai Project entity model với quan hệ phân cấp.</span>
+</code></pre>
+                </div>
+
+                <h4 id="viet-huong-dan-chinh-main-instructions" class="scroll-mt-8">Viết hướng dẫn chính (Main
+                    Instructions)</h4>
+                <p>Sau frontmatter, viết hướng dẫn thực tế bằng Markdown.</p>
+                <p><strong>Cấu trúc khuyến nghị</strong> (điều chỉnh template này cho skill của bạn):</p>
+                <div class="highlight">
+                    <pre><span></span><code>---
+name: your-skill
+<span class="gu">description: [...]</span>
+<span class="gu">---</span>
+
+<span class="gh"># Tên Skill Của Bạn</span>
+
+<span class="gu">## Instructions (Hướng dẫn)</span>
+
+<span class="gu">### Step 1: [Bước chính đầu tiên]</span>
+Giải thích rõ ràng điều gì xảy ra.
+
+Ví dụ:
+python scripts/fetch_data.py --project-id PROJECT_ID
+Expected output: [mô tả kết quả thành công như thế nào]
+
+(Thêm các bước nếu cần)
+
+<span class="gu">## Examples (Ví dụ)</span>
+
+<span class="gu">### Ví dụ 1: [kịch bản phổ biến]</span>
+Người dùng nói: &quot;Thiết lập campaign marketing mới&quot;
+Hành động:
+<span class="k">1.</span> Lấy campaign hiện có qua MCP
+<span class="k">2.</span> Tạo campaign mới với tham số đã cung cấp
+Kết quả: Campaign được tạo với link xác nhận
+
+(Thêm ví dụ nếu cần)
+
+<span class="gu">## Troubleshooting (Xử lý sự cố)</span>
+
+Error: [Thông báo lỗi phổ biến]
+Nguyên nhân: [Tại sao xảy ra]
+Giải pháp: [Cách sửa]
+
+(Thêm trường hợp lỗi nếu cần)
+</code></pre>
+                </div>
+
+                <h4 id="best-practice-cho-huong-dan" class="scroll-mt-8">Best Practice cho hướng dẫn</h4>
+                <p><strong>Cụ thể và actionable (có thể hành động):</strong></p>
+                <p>✅ Tốt:</p>
+                <div class="highlight">
+                    <pre><span></span><code>Chạy `python scripts/validate.py --input {filename}` để kiểm tra format dữ liệu.
+Nếu validation thất bại, các vấn đề phổ biến bao gồm:
+- Thiếu required field (thêm vào CSV)
+- Format ngày không hợp lệ (dùng YYYY-MM-DD)
+</code></pre>
+                </div>
+
+                <p>❌ Xấu:</p>
+                <div class="highlight">
+                    <pre><span></span><code>Xác nhận dữ liệu trước khi tiếp tục.
+</code></pre>
+                </div>
+
+                <p><strong>Bao gồm xử lý lỗi (Error Handling):</strong></p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="gu">## Common Issues (Vấn đề phổ biến)</span>
+
+<span class="gu">### MCP Connection Failed (Kết nối MCP thất bại)</span>
+Nếu thấy &quot;Connection refused&quot;:
+<span class="k">1.</span> Xác nhận MCP server đang chạy: Kiểm tra Settings &gt; Extensions
+<span class="k">2.</span> Xác nhận API key hợp lệ
+<span class="k">3.</span> Thử kết nối lại: Settings &gt; Extensions &gt; [Service] &gt; Reconnect
+</code></pre>
+                </div>
+
+                <p><strong>Tham chiếu tài nguyên rõ ràng:</strong></p>
+                <div class="highlight">
+                    <pre><span></span><code>Trước khi viết query, tham khảo `references/api-patterns.md` về:
+- Hướng dẫn rate limiting (giới hạn tốc độ)
+- Pagination pattern (mẫu phân trang)
+- Error code và xử lý
+</code></pre>
+                </div>
+
+                <p><strong>Sử dụng Progressive Disclosure (Tiết lộ dần dần):</strong></p>
+                <p>Giữ SKILL.md tập trung vào hướng dẫn cốt lõi. Chuyển tài liệu chi tiết sang <code>references/</code>
+                    và link tới. (Xem Core Design Principles về cách hệ thống ba tầng hoạt động.)</p>
+                <hr />
+                <h2 id="chuong-3-kiem-thu-va-cai-tien-testing-and-iteration" class="scroll-mt-8">Chương 3: Kiểm thử và
+                    Cải tiến (Testing and Iteration)</h2>
+                <p>Skill có thể được test ở các mức độ nghiêm ngặt khác nhau tùy nhu cầu:</p>
+                <ul>
+                    <li><strong>Manual testing (Test thủ công) trên Claude.ai</strong> - Chạy query trực tiếp và quan
+                        sát hành vi. Lặp nhanh, không cần setup.</li>
+                    <li><strong>Scripted testing (Test có script) trên Claude Code</strong> - Tự động hóa test case để
+                        xác nhận lặp lại qua các thay đổi.</li>
+                    <li><strong>Programmatic testing (Test lập trình) qua Skills API</strong> - Xây evaluation suite
+                        chạy có hệ thống trên tập test xác định.</li>
+                </ul>
+                <p>Chọn cách tiếp cận phù hợp với yêu cầu chất lượng và mức độ phổ biến của skill. Skill dùng nội bộ cho
+                    team nhỏ có nhu cầu test khác với skill triển khai cho hàng ngàn người dùng enterprise.</p>
+                <blockquote>
+                    <p><strong>Pro Tip:</strong> Lặp đi lặp lại trên một tác vụ duy nhất trước khi mở rộng. Cách hiệu
+                        quả nhất là lặp trên một tác vụ khó cho đến khi Claude thành công, sau đó rút ra cách tiếp cận
+                        hiệu quả thành skill. Điều này tận dụng in-context learning (học trong ngữ cảnh) của Claude và
+                        cho tín hiệu nhanh hơn so với test rộng.</p>
+                </blockquote>
+                <h3 id="phuong-phap-test-khuyen-nghi" class="scroll-mt-8">Phương pháp test khuyến nghị</h3>
+                <h4 id="1-triggering-test-test-kich-hoat" class="scroll-mt-8">1. Triggering Test (Test kích hoạt)</h4>
+                <p><strong>Mục tiêu:</strong> Đảm bảo skill tải đúng lúc.</p>
+                <p><strong>Test case:</strong>
+                    - ✅ Trigger với tác vụ rõ ràng
+                    - ✅ Trigger với yêu cầu diễn đạt lại
+                    - ❌ Không trigger với chủ đề không liên quan</p>
+                <p><strong>Ví dụ test suite:</strong></p>
+                <div class="highlight">
+                    <pre><span></span><code>Nên trigger:
+- &quot;Giúp tôi thiết lập workspace ProjectHub mới&quot;
+- &quot;Tôi cần tạo dự án trong ProjectHub&quot;
+- &quot;Khởi tạo dự án ProjectHub cho kế hoạch Q4&quot;
+
+KHÔNG nên trigger:
+- &quot;Thời tiết ở San Francisco thế nào?&quot;
+- &quot;Giúp tôi viết code Python&quot;
+- &quot;Tạo spreadsheet&quot; (trừ khi skill ProjectHub xử lý sheets)
+</code></pre>
+                </div>
+
+                <h4 id="2-functional-test-test-chuc-nang" class="scroll-mt-8">2. Functional Test (Test chức năng)</h4>
+                <p><strong>Mục tiêu:</strong> Xác minh skill tạo output đúng.</p>
+                <p><strong>Test case:</strong>
+                    - Output hợp lệ được tạo
+                    - API call thành công
+                    - Error handling hoạt động
+                    - Edge case (trường hợp biên) được xử lý</p>
+                <p><strong>Ví dụ:</strong></p>
+                <div class="highlight">
+                    <pre><span></span><code>Test: Tạo dự án với 5 task
+Given: Tên dự án &quot;Q4 Planning&quot;, 5 mô tả task
+When: Skill thực thi workflow
+Then:
+  - Dự án được tạo trong ProjectHub
+  - 5 task được tạo với property đúng
+  - Tất cả task liên kết với dự án
+  - Không có API error
+</code></pre>
+                </div>
+
+                <h4 id="3-performance-comparison-so-sanh-hieu-suat" class="scroll-mt-8">3. Performance Comparison (So
+                    sánh hiệu suất)</h4>
+                <p><strong>Mục tiêu:</strong> Chứng minh skill cải thiện kết quả so với baseline.</p>
+                <p><strong>So sánh baseline:</strong></p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Không có Skill</th>
+                            <th>Có Skill</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Quy trình</td>
+                            <td>Người dùng cung cấp hướng dẫn mỗi lần</td>
+                            <td>Tự động thực thi workflow</td>
+                        </tr>
+                        <tr>
+                            <td>Tương tác</td>
+                            <td>15 tin nhắn qua lại</td>
+                            <td>2 câu hỏi làm rõ</td>
+                        </tr>
+                        <tr>
+                            <td>Lỗi API</td>
+                            <td>3 lần gọi thất bại cần retry</td>
+                            <td>0 lần gọi thất bại</td>
+                        </tr>
+                        <tr>
+                            <td>Token</td>
+                            <td>12,000 token tiêu thụ</td>
+                            <td>6,000 token tiêu thụ</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3 id="su-dung-skill-skill-creator" class="scroll-mt-8">Sử dụng skill <code>skill-creator</code></h3>
+                <p>Skill <code>skill-creator</code> - có sẵn trên Claude.ai qua plugin directory hoặc download cho
+                    Claude Code - giúp bạn xây và cải tiến skill. Nếu bạn có MCP Server và biết 2-3 workflow hàng đầu,
+                    bạn có thể xây và test skill hoàn chỉnh trong một lần ngồi - thường trong <strong>15-30
+                        phút</strong>.</p>
+                <p><strong>Tạo skill:</strong>
+                    - Tạo skill từ mô tả ngôn ngữ tự nhiên
+                    - Xuất SKILL.md đúng format với frontmatter
+                    - Đề xuất trigger phrase và cấu trúc</p>
+                <p><strong>Review skill:</strong>
+                    - Gắn cờ vấn đề phổ biến (description mơ hồ, thiếu trigger, vấn đề cấu trúc)
+                    - Xác định rủi ro over/under-triggering
+                    - Đề xuất test case dựa trên mục đích skill</p>
+                <p><strong>Cải tiến lặp lại:</strong>
+                    - Sau khi dùng skill và gặp edge case hoặc lỗi, mang các ví dụ đó về skill-creator
+                    - Ví dụ: "Dùng các vấn đề &amp; giải pháp trong chat này để cải thiện cách skill xử lý [edge case cụ
+                    thể]"</p>
+                <p><strong>Cách sử dụng:</strong></p>
+                <div class="highlight">
+                    <pre><span></span><code>&quot;Dùng skill skill-creator để giúp tôi xây skill cho [use case của bạn]&quot;
+</code></pre>
+                </div>
+
+                <blockquote>
+                    <p><strong>Lưu ý:</strong> skill-creator giúp bạn thiết kế và tinh chỉnh skill nhưng không chạy
+                        automated test suite hay xuất kết quả đánh giá định lượng.</p>
+                </blockquote>
+                <h3 id="cai-tien-dua-tren-feedback" class="scroll-mt-8">Cải tiến dựa trên feedback</h3>
+                <p>Skill là <strong>tài liệu sống</strong>. Hãy lên kế hoạch cải tiến dựa trên:</p>
+                <p><strong>Tín hiệu Undertriggering (kích hoạt thiếu):</strong>
+                    - Skill không tải khi cần
+                    - Người dùng phải bật thủ công
+                    - Câu hỏi hỗ trợ về khi nào dùng nó</p>
+                <p><strong>Giải pháp:</strong> Thêm chi tiết và sắc thái vào description - bao gồm keyword đặc biệt cho
+                    thuật ngữ kỹ thuật.</p>
+                <p><strong>Tín hiệu Overtriggering (kích hoạt thừa):</strong>
+                    - Skill tải cho query không liên quan
+                    - Người dùng tắt nó
+                    - Nhầm lẫn về mục đích</p>
+                <p><strong>Giải pháp:</strong> Thêm negative trigger, cụ thể hơn.</p>
+                <p><strong>Vấn đề Execution (thực thi):</strong>
+                    - Kết quả không nhất quán
+                    - API call thất bại
+                    - Người dùng cần sửa</p>
+                <p><strong>Giải pháp:</strong> Cải thiện hướng dẫn, thêm error handling.</p>
+                <hr />
+                <h2 id="chuong-4-phan-phoi-va-chia-se-distribution-and-sharing" class="scroll-mt-8">Chương 4: Phân phối
+                    và Chia sẻ (Distribution and Sharing)</h2>
+                <p>Skill làm cho MCP Integration của bạn hoàn chỉnh hơn. Khi người dùng so sánh các connector, những cái
+                    có skill cung cấp đường dẫn nhanh hơn đến giá trị - giúp bạn có lợi thế hơn các giải pháp chỉ có
+                    MCP.</p>
+                <h3 id="mo-hinh-phan-phoi-hien-tai-thang-12026" class="scroll-mt-8">Mô hình phân phối hiện tại (Tháng
+                    1/2026)</h3>
+                <p><strong>Cách người dùng cá nhân nhận skill:</strong>
+                    1. Tải folder skill
+                    2. Nén folder (nếu cần)
+                    3. Upload lên Claude.ai qua Settings &gt; Capabilities &gt; Skills
+                    4. Hoặc đặt vào thư mục skill của Claude Code</p>
+                <p><strong>Skill cấp tổ chức (Organization-level):</strong>
+                    - Admin có thể triển khai skill toàn workspace (ra mắt ngày 18/12/2025)
+                    - Cập nhật tự động
+                    - Quản lý tập trung</p>
+                <h3 id="mot-tieu-chuan-mo-open-standard" class="scroll-mt-8">Một tiêu chuẩn mở (Open Standard)</h3>
+                <p>Anthropic đã công bố <strong>Agent Skills</strong> như một tiêu chuẩn mở. Giống MCP, họ tin rằng
+                    skill nên portable (di động) giữa các tool và platform - cùng một skill nên hoạt động dù bạn đang
+                    dùng Claude hay AI platform khác. Tuy nhiên, một số skill được thiết kế để tận dụng tối đa khả năng
+                    của platform cụ thể; tác giả có thể ghi chú điều này trong field <code>compatibility</code>.</p>
+                <h3 id="su-dung-skill-qua-api" class="scroll-mt-8">Sử dụng Skill qua API</h3>
+                <p>Cho use case lập trình - như xây ứng dụng, agent, hoặc automated workflow tận dụng skill - API cung
+                    cấp quyền kiểm soát trực tiếp quản lý và thực thi skill.</p>
+                <p><strong>Khả năng chính:</strong>
+                    - Endpoint <code>/v1/skills</code> để liệt kê và quản lý skill
+                    - Thêm skill vào Messages API request qua parameter <code>container.skills</code>
+                    - Version control qua Claude Console
+                    - Hoạt động với Claude Agent SDK để xây custom agent</p>
+                <p><strong>Khi nào dùng Skill qua API vs. Claude.ai:</strong></p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Use Case</th>
+                            <th>Nền tảng phù hợp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>End user tương tác trực tiếp với skill</td>
+                            <td>Claude.ai / Claude Code</td>
+                        </tr>
+                        <tr>
+                            <td>Manual testing trong phát triển</td>
+                            <td>Claude.ai / Claude Code</td>
+                        </tr>
+                        <tr>
+                            <td>Workflow cá nhân, ad-hoc</td>
+                            <td>Claude.ai / Claude Code</td>
+                        </tr>
+                        <tr>
+                            <td>Ứng dụng dùng skill lập trình</td>
+                            <td>API</td>
+                        </tr>
+                        <tr>
+                            <td>Production deployment quy mô lớn</td>
+                            <td>API</td>
+                        </tr>
+                        <tr>
+                            <td>Pipeline tự động và hệ thống agent</td>
+                            <td>API</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <blockquote>
+                    <p><strong>Lưu ý:</strong> Skill trong API yêu cầu Code Execution Tool beta, cung cấp môi trường an
+                        toàn mà skill cần để chạy.</p>
+                </blockquote>
+                <h3 id="cach-tiep-can-khuyen-nghi-hien-tai" class="scroll-mt-8">Cách tiếp cận khuyến nghị hiện tại</h3>
+                <p>Bắt đầu bằng cách host skill trên <strong>GitHub</strong> với public repo, README rõ ràng (cho người
+                    dùng - tách biệt với folder skill không chứa README.md), và ví dụ sử dụng kèm screenshot.</p>
+                <ol>
+                    <li><strong>Host trên GitHub</strong></li>
+                    <li>Public repo cho open-source skill</li>
+                    <li>README rõ ràng với hướng dẫn cài đặt</li>
+                    <li>
+                        <p>Ví dụ sử dụng và screenshot</p>
+                    </li>
+                    <li>
+                        <p><strong>Tài liệu trong MCP Repo</strong></p>
+                    </li>
+                    <li>Link đến skill từ tài liệu MCP</li>
+                    <li>Giải thích giá trị khi dùng cả hai cùng nhau</li>
+                    <li>
+                        <p>Cung cấp quick-start guide</p>
+                    </li>
+                    <li>
+                        <p><strong>Tạo Installation Guide (Hướng dẫn cài đặt)</strong></p>
+                    </li>
+                </ol>
+                <div class="highlight">
+                    <pre><span></span><code><span class="gu">## Cài đặt skill [Dịch vụ của bạn]</span>
+
+<span class="k">1.</span> Tải skill:
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Clone repo: <span class="sb">`git clone https://github.com/yourcompany/skills`</span>
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Hoặc download ZIP từ Releases
+
+<span class="k">2.</span> Cài đặt vào Claude:
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Mở Claude.ai &gt; Settings &gt; Skills
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Click &quot;Upload skill&quot;
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Chọn folder skill (đã nén)
+
+<span class="k">3.</span> Bật skill:
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Toggle bật skill [Dịch vụ]
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Đảm bảo MCP Server đã kết nối
+
+<span class="k">4.</span> Test:
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Hỏi Claude: &quot;Thiết lập dự án mới trong [Dịch vụ]&quot;
+</code></pre>
+                </div>
+
+                <h3 id="inh-vi-skill-positioning" class="scroll-mt-8">Định vị Skill (Positioning)</h3>
+                <p>Cách bạn mô tả skill quyết định liệu người dùng có hiểu giá trị và thực sự thử hay không.</p>
+                <p><strong>Tập trung vào outcome (kết quả), không phải feature (tính năng):</strong></p>
+                <p>✅ Tốt:</p>
+                <blockquote>
+                    <p>"Skill ProjectHub cho phép team thiết lập workspace dự án hoàn chỉnh trong vài giây - bao gồm
+                        page, database và template - thay vì tốn 30 phút setup thủ công."</p>
+                </blockquote>
+                <p>❌ Xấu:</p>
+                <blockquote>
+                    <p>"Skill ProjectHub là folder chứa YAML frontmatter và Markdown instruction gọi tool MCP Server."
+                    </p>
+                </blockquote>
+                <p><strong>Nêu bật câu chuyện MCP + Skills:</strong></p>
+                <blockquote>
+                    <p>"MCP Server cho Claude truy cập dự án Linear. Skill dạy Claude workflow sprint planning của team.
+                        Kết hợp lại, chúng cho phép quản lý dự án bằng AI."</p>
+                </blockquote>
+                <hr />
+                <h2 id="chuong-5-cac-pattern-va-xu-ly-su-co-patterns-and-troubleshooting" class="scroll-mt-8">Chương 5:
+                    Các Pattern và Xử lý sự cố (Patterns and Troubleshooting)</h2>
+                <p>Các pattern này xuất phát từ skill được tạo bởi early adopter và internal team. Chúng đại diện cho
+                    các cách tiếp cận phổ biến đã được chứng minh hiệu quả, không phải template bắt buộc.</p>
+                <h3 id="chon-cach-tiep-can-problem-first-vs-tool-first" class="scroll-mt-8">Chọn cách tiếp cận:
+                    Problem-first vs. Tool-first</h3>
+                <p>Hãy nghĩ như đi Home Depot. Bạn có thể đến với một vấn đề - "Tôi cần sửa tủ bếp" - và nhân viên chỉ
+                    bạn đến đúng tool. Hoặc bạn có thể chọn máy khoan mới và hỏi cách dùng nó cho công việc cụ thể.</p>
+                <p>Skill hoạt động tương tự:
+                    - <strong>Problem-first:</strong> "Tôi cần thiết lập workspace dự án" → Skill điều phối các lệnh MCP
+                    đúng theo đúng trình tự. Người dùng mô tả kết quả mong muốn; skill xử lý tool.
+                    - <strong>Tool-first:</strong> "Tôi đã kết nối Notion MCP" → Skill dạy Claude các workflow tối ưu và
+                    best practice. Người dùng có quyền truy cập; skill cung cấp chuyên môn.</p>
+                <h3 id="pattern-1-sequential-workflow-orchestration-ieu-phoi-workflow-tuan-tu" class="scroll-mt-8">
+                    Pattern 1: Sequential Workflow Orchestration (Điều phối workflow tuần tự)</h3>
+                <p><strong>Dùng khi:</strong> Người dùng cần quy trình nhiều bước theo thứ tự cụ thể.</p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="gu">## Workflow: Onboard Khách Hàng Mới</span>
+
+<span class="gu">### Step 1: Tạo Tài Khoản</span>
+Gọi MCP tool: <span class="sb">`create_customer`</span>
+Tham số: name, email, company
+
+<span class="gu">### Step 2: Thiết Lập Thanh Toán</span>
+Gọi MCP tool: <span class="sb">`setup_payment_method`</span>
+Chờ: xác minh phương thức thanh toán
+
+<span class="gu">### Step 3: Tạo Subscription</span>
+Gọi MCP tool: <span class="sb">`create_subscription`</span>
+Tham số: plan_id, customer_id (từ Step 1)
+
+<span class="gu">### Step 4: Gửi Email Chào Mừng</span>
+Gọi MCP tool: <span class="sb">`send_email`</span>
+Template: welcome_email_template
+</code></pre>
+                </div>
+
+                <p><strong>Kỹ thuật chính:</strong>
+                    - Thứ tự bước rõ ràng
+                    - Dependency (phụ thuộc) giữa các bước
+                    - Validation ở mỗi giai đoạn
+                    - Hướng dẫn rollback (hoàn tác) khi thất bại</p>
+                <h3 id="pattern-2-multi-mcp-coordination-phoi-hop-a-mcp" class="scroll-mt-8">Pattern 2: Multi-MCP
+                    Coordination (Phối hợp đa MCP)</h3>
+                <p><strong>Dùng khi:</strong> Workflow trải rộng nhiều dịch vụ.</p>
+                <p><strong>Ví dụ: Handoff thiết kế sang phát triển</strong></p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="gu">### Phase 1: Design Export (Figma MCP)</span>
+<span class="k">1.</span> Export tài sản thiết kế từ Figma
+<span class="k">2.</span> Tạo specification thiết kế
+<span class="k">3.</span> Tạo asset manifest
+
+<span class="gu">### Phase 2: Asset Storage (Drive MCP)</span>
+<span class="k">1.</span> Tạo folder dự án trong Drive
+<span class="k">2.</span> Upload tất cả tài sản
+<span class="k">3.</span> Tạo link chia sẻ
+
+<span class="gu">### Phase 3: Task Creation (Linear MCP)</span>
+<span class="k">1.</span> Tạo task phát triển
+<span class="k">2.</span> Đính kèm link tài sản vào task
+<span class="k">3.</span> Phân công cho engineering team
+
+<span class="gu">### Phase 4: Notification (Slack MCP)</span>
+<span class="k">1.</span> Đăng tóm tắt handoff vào <span class="ni">#engineering</span>
+<span class="k">2.</span> Bao gồm link tài sản và tham chiếu task
+</code></pre>
+                </div>
+
+                <p><strong>Kỹ thuật chính:</strong>
+                    - Phân pha rõ ràng
+                    - Truyền dữ liệu giữa các MCP
+                    - Validation trước khi chuyển pha tiếp
+                    - Error handling tập trung</p>
+                <h3 id="pattern-3-iterative-refinement-tinh-chinh-lap-lai" class="scroll-mt-8">Pattern 3: Iterative
+                    Refinement (Tinh chỉnh lặp lại)</h3>
+                <p><strong>Dùng khi:</strong> Chất lượng output cải thiện qua iteration (lặp).</p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="gu">## Tạo Báo Cáo Lặp</span>
+
+<span class="gu">### Initial Draft (Bản nháp đầu)</span>
+<span class="k">1.</span> Lấy dữ liệu qua MCP
+<span class="k">2.</span> Tạo báo cáo bản nháp đầu
+<span class="k">3.</span> Lưu vào file tạm
+
+<span class="gu">### Quality Check (Kiểm tra chất lượng)</span>
+<span class="k">1.</span> Chạy script validation: <span class="sb">`scripts/check_report.py`</span>
+<span class="k">2.</span> Xác định vấn đề:
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Thiếu section
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Format không nhất quán
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Lỗi validation dữ liệu
+
+<span class="gu">### Refinement Loop (Vòng tinh chỉnh)</span>
+<span class="k">1.</span> Xử lý từng vấn đề đã xác định
+<span class="k">2.</span> Tạo lại các section bị ảnh hưởng
+<span class="k">3.</span> Validate lại
+<span class="k">4.</span> Lặp lại cho đến khi đạt ngưỡng chất lượng
+
+<span class="gu">### Finalization (Hoàn thiện)</span>
+<span class="k">1.</span> Áp dụng format cuối cùng
+<span class="k">2.</span> Tạo tóm tắt
+<span class="k">3.</span> Lưu bản cuối
+</code></pre>
+                </div>
+
+                <p><strong>Kỹ thuật chính:</strong> Tiêu chí chất lượng rõ ràng, cải tiến lặp, validation script, biết
+                    khi nào dừng lặp.</p>
+                <h3 id="pattern-4-context-aware-tool-selection-chon-tool-theo-ngu-canh" class="scroll-mt-8">Pattern 4:
+                    Context-aware Tool Selection (Chọn tool theo ngữ cảnh)</h3>
+                <p><strong>Dùng khi:</strong> Cùng kết quả nhưng tool khác nhau tùy ngữ cảnh.</p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="gu">## Smart File Storage (Lưu file thông minh)</span>
+
+<span class="gu">### Decision Tree (Cây quyết định)</span>
+<span class="k">1.</span> Kiểm tra loại file và kích thước
+<span class="k">2.</span> Xác định vị trí lưu tốt nhất:
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>File lớn (&gt;10MB): Dùng cloud storage MCP
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Tài liệu cộng tác: Dùng Notion/Docs MCP
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>File code: Dùng GitHub MCP
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>File tạm: Dùng local storage
+
+<span class="gu">### Execute Storage (Thực thi lưu trữ)</span>
+Dựa trên quyết định:
+<span class="k">-</span><span class="w"> </span>Gọi tool MCP phù hợp
+<span class="k">-</span><span class="w"> </span>Áp dụng metadata đặc thù dịch vụ
+<span class="k">-</span><span class="w"> </span>Tạo link truy cập
+
+<span class="gu">### Giải thích cho người dùng</span>
+Giải thích tại sao chọn storage đó.
+</code></pre>
+                </div>
+
+                <p><strong>Kỹ thuật chính:</strong> Tiêu chí quyết định rõ ràng, tùy chọn dự phòng, minh bạch về lựa
+                    chọn.</p>
+                <h3 id="pattern-5-domain-specific-intelligence-tri-tue-chuyen-nganh" class="scroll-mt-8">Pattern 5:
+                    Domain-specific Intelligence (Trí tuệ chuyên ngành)</h3>
+                <p><strong>Dùng khi:</strong> Skill thêm kiến thức chuyên ngành vượt xa quyền truy cập tool.</p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="gu">## Xử lý thanh toán với Compliance (tuân thủ)</span>
+
+<span class="gu">### Before Processing (Kiểm tra Compliance trước)</span>
+<span class="k">1.</span> Lấy chi tiết giao dịch qua MCP
+<span class="k">2.</span> Áp dụng quy tắc compliance:
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Kiểm tra danh sách trừng phạt
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Xác minh quyền hạn theo khu vực
+<span class="w">   </span><span class="k">-</span><span class="w"> </span>Đánh giá mức rủi ro
+<span class="k">3.</span> Ghi chép quyết định compliance
+
+<span class="gu">### Processing (Xử lý)</span>
+NẾU compliance đạt:
+<span class="w">  </span><span class="k">-</span><span class="w"> </span>Gọi tool xử lý thanh toán MCP
+<span class="w">  </span><span class="k">-</span><span class="w"> </span>Áp dụng kiểm tra gian lận phù hợp
+<span class="w">  </span><span class="k">-</span><span class="w"> </span>Xử lý giao dịch
+KHÔNG ĐẠT:
+<span class="w">  </span><span class="k">-</span><span class="w"> </span>Đánh dấu để review
+<span class="w">  </span><span class="k">-</span><span class="w"> </span>Tạo compliance case
+
+<span class="gu">### Audit Trail (Dấu vết kiểm toán)</span>
+<span class="k">-</span><span class="w"> </span>Ghi log tất cả kiểm tra compliance
+<span class="k">-</span><span class="w"> </span>Ghi lại quyết định xử lý
+<span class="k">-</span><span class="w"> </span>Tạo báo cáo kiểm toán
+</code></pre>
+                </div>
+
+                <p><strong>Kỹ thuật chính:</strong> Chuyên môn lĩnh vực nhúng trong logic, compliance trước hành động,
+                    tài liệu toàn diện, quản trị rõ ràng.</p>
+                <hr />
+                <h3 id="xu-ly-su-co-troubleshooting" class="scroll-mt-8">Xử lý sự cố (Troubleshooting)</h3>
+                <h4 id="skill-khong-upload-uoc" class="scroll-mt-8">Skill không upload được</h4>
+                <p><strong>Error: "Could not find SKILL.md in uploaded folder"</strong>
+                    - <strong>Nguyên nhân:</strong> File không đặt tên đúng SKILL.md
+                    - <strong>Giải pháp:</strong> Đổi tên thành <code>SKILL.md</code> (phân biệt hoa thường). Xác minh
+                    bằng: <code>ls -la</code> phải hiển thị <code>SKILL.md</code></p>
+                <p><strong>Error: "Invalid frontmatter"</strong>
+                    - <strong>Nguyên nhân:</strong> Vấn đề format YAML</p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="c1"># Sai - thiếu delimiter</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-skill</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Làm gì đó</span>
+
+<span class="c1"># Sai - ngoặc kép không đóng</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-skill</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Làm</span><span class="nv"> </span><span class="s">gì</span><span class="nv"> </span><span class="s">đó</span>
+
+<span class="s">#</span><span class="nv"> </span><span class="s">Đúng</span>
+<span class="s">---</span>
+<span class="s">name:</span><span class="nv"> </span><span class="s">my-skill</span>
+<span class="s">description:</span><span class="nv"> </span><span class="s">Làm</span><span class="nv"> </span><span class="s">gì</span><span class="nv"> </span><span class="s">đó</span>
+<span class="s">---</span>
+</code></pre>
+                </div>
+
+                <p><strong>Error: "Invalid skill name"</strong>
+                    - <strong>Nguyên nhân:</strong> Tên có dấu cách hoặc chữ hoa</p>
+                <div class="highlight">
+                    <pre><span></span><code><span class="c1"># Sai</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">My Cool Skill</span>
+
+<span class="c1"># Đúng</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-cool-skill</span>
+</code></pre>
+                </div>
+
+                <h4 id="skill-khong-trigger-kich-hoat" class="scroll-mt-8">Skill không trigger (kích hoạt)</h4>
+                <p><strong>Triệu chứng:</strong> Skill không bao giờ tự tải.</p>
+                <p><strong>Sửa:</strong> Chỉnh sửa field <code>description</code>. Checklist nhanh:
+                    - Quá chung chung? ("Giúp với dự án" sẽ không hoạt động)
+                    - Có trigger phrase người dùng thực sự nói không?
+                    - Có đề cập loại file liên quan không?</p>
+                <p><strong>Cách debug:</strong> Hỏi Claude: <em>"Khi nào bạn sẽ dùng skill [tên skill]?"</em> Claude sẽ
+                    trích dẫn description. Điều chỉnh dựa trên phần thiếu.</p>
+                <h4 id="skill-trigger-qua-nhieu" class="scroll-mt-8">Skill trigger quá nhiều</h4>
+                <p><strong>Triệu chứng:</strong> Skill tải cho query không liên quan.</p>
+                <p><strong>Giải pháp:</strong></p>
+                <ol>
+                    <li><strong>Thêm negative trigger:</strong></li>
+                </ol>
+                <div class="highlight">
+                    <pre><span></span><code><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Phân tích dữ liệu nâng cao cho file CSV. Dùng cho</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">mô hình thống kê, regression, clustering. KHÔNG dùng cho khám</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">phá dữ liệu đơn giản (dùng skill data-viz thay thế).</span>
+</code></pre>
+                </div>
+
+                <ol>
+                    <li><strong>Cụ thể hơn:</strong></li>
+                </ol>
+                <div class="highlight">
+                    <pre><span></span><code><span class="c1"># Quá rộng</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Xử lý tài liệu</span>
+
+<span class="c1"># Cụ thể hơn</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Xử lý tài liệu PDF pháp lý để review hợp đồng</span>
+</code></pre>
+                </div>
+
+                <ol>
+                    <li><strong>Làm rõ phạm vi:</strong></li>
+                </ol>
+                <div class="highlight">
+                    <pre><span></span><code><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Xử lý thanh toán PayFlow cho thương mại điện tử.</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">Dùng cụ thể cho workflow thanh toán online, không dùng cho truy</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">vấn tài chính chung.</span>
+</code></pre>
+                </div>
+
+                <h4 id="van-e-ket-noi-mcp" class="scroll-mt-8">Vấn đề kết nối MCP</h4>
+                <p><strong>Triệu chứng:</strong> Skill tải nhưng lệnh MCP thất bại.</p>
+                <p><strong>Checklist:</strong>
+                    1. Xác minh MCP server đã kết nối (Claude.ai: Settings &gt; Extensions &gt; [Service], phải hiển thị
+                    "Connected")
+                    2. Kiểm tra authentication - API key hợp lệ, chưa hết hạn, đúng permission/scope, OAuth token đã
+                    refresh
+                    3. Test MCP độc lập - Hỏi Claude gọi MCP trực tiếp (không qua skill): "Dùng [Service] MCP để lấy dự
+                    án của tôi". Nếu thất bại → vấn đề là MCP, không phải skill.
+                    4. Xác minh tên tool - Skill tham chiếu đúng tên tool MCP. Kiểm tra tài liệu MCP Server. Tên tool
+                    phân biệt hoa thường (case-sensitive).</p>
+                <h4 id="huong-dan-khong-uoc-tuan-theo" class="scroll-mt-8">Hướng dẫn không được tuân theo</h4>
+                <p><strong>Triệu chứng:</strong> Skill tải nhưng Claude không làm theo hướng dẫn.</p>
+                <p><strong>Nguyên nhân phổ biến:</strong></p>
+                <ol>
+                    <li>
+                        <p><strong>Hướng dẫn quá dài:</strong> Giữ hướng dẫn ngắn gọn. Dùng bullet point và danh sách
+                            đánh số. Chuyển tài liệu chi tiết sang file riêng.</p>
+                    </li>
+                    <li>
+                        <p><strong>Hướng dẫn bị chôn vùi:</strong> Đặt hướng dẫn quan trọng lên đầu. Dùng header
+                            <code>## Important</code> hoặc <code>## Critical</code>. Lặp lại điểm chính nếu cần.
+                        </p>
+                    </li>
+                    <li>
+                        <p><strong>Ngôn ngữ mơ hồ:</strong></p>
+                    </li>
+                </ol>
+                <div class="highlight">
+                    <pre><span></span><code><span class="gh"># Xấu</span>
+Đảm bảo validate mọi thứ đúng cách
+
+<span class="gh"># Tốt</span>
+CRITICAL: Trước khi gọi create_project, xác minh:
+<span class="k">-</span><span class="w"> </span>Tên dự án không trống
+<span class="k">-</span><span class="w"> </span>Có ít nhất một thành viên team được phân công
+<span class="k">-</span><span class="w"> </span>Ngày bắt đầu không nằm trong quá khứ
+</code></pre>
+                </div>
+
+                <blockquote>
+                    <p><strong>Kỹ thuật nâng cao:</strong> Cho validation quan trọng, cân nhắc đóng gói script kiểm tra
+                        theo chương trình thay vì dựa vào hướng dẫn ngôn ngữ. Code là deterministic (xác định); diễn
+                        giải ngôn ngữ thì không.</p>
+                </blockquote>
+                <ol>
+                    <li><strong>Model "lười biếng":</strong> Thêm khuyến khích rõ ràng:</li>
+                </ol>
+                <div class="highlight">
+                    <pre><span></span><code><span class="gu">## Performance Notes</span>
+<span class="k">-</span><span class="w"> </span>Hãy dành thời gian làm kỹ lưỡng
+<span class="k">-</span><span class="w"> </span>Chất lượng quan trọng hơn tốc độ
+<span class="k">-</span><span class="w"> </span>Không bỏ qua bước validation
+</code></pre>
+                </div>
+
+                <blockquote>
+                    <p><strong>Lưu ý:</strong> Thêm điều này vào user prompt hiệu quả hơn trong SKILL.md.</p>
+                </blockquote>
+                <h4 id="van-e-context-lon" class="scroll-mt-8">Vấn đề Context lớn</h4>
+                <p><strong>Triệu chứng:</strong> Skill chạy chậm hoặc phản hồi kém chất lượng.</p>
+                <p><strong>Nguyên nhân:</strong>
+                    - Nội dung skill quá lớn
+                    - Quá nhiều skill được bật đồng thời
+                    - Tất cả nội dung được tải thay vì progressive disclosure</p>
+                <p><strong>Giải pháp:</strong>
+                    1. <strong>Tối ưu kích thước SKILL.md:</strong> Di chuyển tài liệu chi tiết sang
+                    <code>references/</code>. Link thay vì inline. Giữ SKILL.md <strong>dưới 5,000 từ</strong>.
+                    2. <strong>Giảm số skill bật:</strong> Đánh giá nếu bạn có hơn 20-50 skill bật đồng thời. Khuyến
+                    nghị bật có chọn lọc. Cân nhắc "skill pack" cho các khả năng liên quan.
+                </p>
+                <hr />
+                <h2 id="chuong-6-tai-nguyen-va-tham-khao-resources-and-references" class="scroll-mt-8">Chương 6: Tài
+                    nguyên và Tham khảo (Resources and References)</h2>
+                <p>Nếu bạn đang xây skill đầu tiên, hãy bắt đầu với Best Practices Guide, sau đó tham khảo API docs khi
+                    cần.</p>
+                <h3 id="tai-lieu-chinh-thuc-official-documentation" class="scroll-mt-8">Tài liệu chính thức (Official
+                    Documentation)</h3>
+                <p><strong>Tài nguyên Anthropic:</strong>
+                    - Best Practices Guide
+                    - Skills Documentation
+                    - API Reference
+                    - MCP Documentation</p>
+                <p><strong>Blog Post:</strong>
+                    - Introducing Agent Skills
+                    - Engineering Blog: Equipping Agents for the Real World
+                    - Skills Explained
+                    - How to Create Skills for Claude
+                    - Building Skills for Claude Code
+                    - Improving Frontend Design through Skills</p>
+                <h3 id="skill-mau-example-skills" class="scroll-mt-8">Skill mẫu (Example Skills)</h3>
+                <p><strong>Public skills repository:</strong>
+                    - GitHub: <a href="https://github.com/anthropics/skills">anthropics/skills</a>
+                    - Chứa các skill do Anthropic tạo mà bạn có thể tùy chỉnh</p>
+                <h3 id="tool-va-tien-ich" class="scroll-mt-8">Tool và Tiện ích</h3>
+                <p><strong>Skill <code>skill-creator</code>:</strong>
+                    - Tích hợp sẵn trong Claude.ai và có sẵn cho Claude Code
+                    - Có thể tạo skill từ mô tả
+                    - Review và đưa ra khuyến nghị
+                    - Cách dùng: "Giúp tôi xây skill bằng skill-creator"</p>
+                <p><strong>Validation:</strong>
+                    - skill-creator có thể đánh giá skill của bạn
+                    - Hỏi: "Review skill này và đề xuất cải thiện"</p>
+                <h3 id="ho-tro-getting-support" class="scroll-mt-8">Hỗ trợ (Getting Support)</h3>
+                <p><strong>Câu hỏi kỹ thuật:</strong> Community forum tại Claude Developers Discord</p>
+                <p><strong>Báo cáo Bug:</strong> GitHub Issues: <code>anthropics/skills/issues</code> - bao gồm: tên
+                    skill, thông báo lỗi, các bước tái tạo.</p>
+                <hr />
+                <h2 id="phu-luc-a-checklist-nhanh" class="scroll-mt-8">Phụ lục A: Checklist nhanh</h2>
+                <p>Dùng checklist này để validate skill trước và sau khi upload. Nếu muốn bắt đầu nhanh, dùng skill
+                    <code>skill-creator</code> để tạo bản nháp đầu, sau đó chạy qua danh sách này.
+                </p>
+                <h3 id="truoc-khi-bat-au" class="scroll-mt-8">Trước khi bắt đầu</h3>
+                <ul>
+                    <li>[ ] Xác định 2-3 use case cụ thể</li>
+                    <li>[ ] Xác định tool cần dùng (tích hợp sẵn hoặc MCP)</li>
+                    <li>[ ] Đã xem hướng dẫn và skill mẫu</li>
+                    <li>[ ] Lên kế hoạch cấu trúc folder</li>
+                </ul>
+                <h3 id="trong-qua-trinh-phat-trien" class="scroll-mt-8">Trong quá trình phát triển</h3>
+                <ul>
+                    <li>[ ] Folder đặt tên kebab-case</li>
+                    <li>[ ] File <code>SKILL.md</code> tồn tại (chính xác chính tả)</li>
+                    <li>[ ] YAML Frontmatter có delimiter <code>---</code></li>
+                    <li>[ ] Field <code>name</code>: kebab-case, không dấu cách, không chữ hoa</li>
+                    <li>[ ] <code>description</code> bao gồm WHAT (cái gì) và WHEN (khi nào)</li>
+                    <li>[ ] Không có XML tag (<code>&lt; &gt;</code>) ở đâu cả</li>
+                    <li>[ ] Hướng dẫn rõ ràng và actionable</li>
+                    <li>[ ] Có xử lý lỗi (error handling)</li>
+                    <li>[ ] Có ví dụ</li>
+                    <li>[ ] Reference được link rõ ràng</li>
+                </ul>
+                <h3 id="truoc-khi-upload" class="scroll-mt-8">Trước khi upload</h3>
+                <ul>
+                    <li>[ ] Test trigger với tác vụ rõ ràng</li>
+                    <li>[ ] Test trigger với yêu cầu diễn đạt lại</li>
+                    <li>[ ] Xác nhận không trigger với chủ đề không liên quan</li>
+                    <li>[ ] Functional test đạt</li>
+                    <li>[ ] Tool integration hoạt động (nếu áp dụng)</li>
+                    <li>[ ] Đã nén thành file .zip</li>
+                </ul>
+                <h3 id="sau-khi-upload" class="scroll-mt-8">Sau khi upload</h3>
+                <ul>
+                    <li>[ ] Test trong cuộc hội thoại thực</li>
+                    <li>[ ] Giám sát under/over-triggering</li>
+                    <li>[ ] Thu thập user feedback</li>
+                    <li>[ ] Cải tiến description và hướng dẫn</li>
+                    <li>[ ] Cập nhật version trong metadata</li>
+                </ul>
+                <hr />
+                <h2 id="phu-luc-b-yaml-frontmatter" class="scroll-mt-8">Phụ lục B: YAML Frontmatter</h2>
+                <h3 id="field-bat-buoc-required" class="scroll-mt-8">Field bắt buộc (Required)</h3>
+                <div class="highlight">
+                    <pre><span></span><code><span class="nn">---</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">skill-name-in-kebab-case</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Nó làm gì và khi nào dùng. Bao gồm trigger phrase cụ thể.</span>
+<span class="nn">---</span>
+</code></pre>
+                </div>
+
+                <h3 id="tat-ca-field-tuy-chon" class="scroll-mt-8">Tất cả field tùy chọn</h3>
+                <div class="highlight">
+                    <pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">skill-name</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">description bắt buộc</span><span class="p p-Indicator">]</span>
+<span class="nt">license</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MIT</span><span class="w"> </span><span class="c1"># Tùy chọn: License cho open-source</span>
+<span class="nt">allowed-tools</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Bash(python:*)</span><span class="nv"> </span><span class="s">Bash(npm:*)</span><span class="nv"> </span><span class="s">WebFetch&quot;</span><span class="w"> </span><span class="c1"># Tùy chọn: Giới hạn truy cập tool</span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"> </span><span class="c1"># Tùy chọn: Field tùy chỉnh</span>
+<span class="w">  </span><span class="nt">author</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Company Name</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0.0</span>
+<span class="w">  </span><span class="nt">mcp-server</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">server-name</span>
+<span class="w">  </span><span class="nt">category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">productivity</span>
+<span class="w">  </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">project-management</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">automation</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">documentation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.com/docs</span>
+<span class="w">  </span><span class="nt">support</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">support@example.com</span>
+</code></pre>
+                </div>
+
+                <h3 id="luu-y-bao-mat-security-notes" class="scroll-mt-8">Lưu ý bảo mật (Security Notes)</h3>
+                <p><strong>Được phép:</strong>
+                    - Bất kỳ kiểu YAML chuẩn (string, number, boolean, list, object)
+                    - Field metadata tùy chỉnh
+                    - Description dài (đến 1024 ký tự)</p>
+                <p><strong>Bị cấm:</strong>
+                    - Dấu ngoặc nhọn XML (<code>&lt; &gt;</code>) - hạn chế bảo mật
+                    - Thực thi code trong YAML (dùng safe YAML parsing)
+                    - Skill đặt tên với prefix "claude" hoặc "anthropic" (đã reserved)</p>
+                <hr />
+                <h2 id="phu-luc-c-vi-du-skill-hoan-chinh" class="scroll-mt-8">Phụ lục C: Ví dụ Skill hoàn chỉnh</h2>
+                <p>Cho các skill production-ready (sẵn sàng sản xuất) đầy đủ minh họa các pattern trong hướng dẫn này:
+                </p>
+                <ul>
+                    <li><strong>Document Skills</strong> - Tạo PDF, DOCX, PPTX, XLSX</li>
+                    <li><strong>Example Skills</strong> - Các pattern workflow đa dạng</li>
+                    <li><strong>Partner Skills Directory</strong> - Xem skill từ nhiều partner như Asana, Atlassian,
+                        Canva, Figma, Sentry, Zapier, và nhiều hơn nữa</li>
+                </ul>
+                <p>Các repository này được cập nhật thường xuyên và bao gồm ví dụ bổ sung ngoài những gì được trình bày
+                    ở đây. Clone chúng, chỉnh sửa cho use case của bạn, và dùng làm template.</p>
+                <hr />
+                <p><em>Nguồn: claude.ai</em></p>
+            </div>
+            <footer
+                style="margin-top:80px;padding:24px 32px;text-align:center;font-size:0.82rem;color:#94a3b8;background:rgba(15,23,42,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:12px;border:1px solid rgba(34,211,238,0.1);position:relative;overflow:hidden;">
+                <div
+                    style="position:absolute;top:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,rgba(34,211,238,0.3),rgba(245,158,11,0.2),transparent);">
+                </div>
+                <a href="https://www.facebook.com/dotanminh/" target="_blank" rel="noopener noreferrer"
+                    style="display:inline-flex;align-items:center;gap:6px;color:#67e8f9;text-decoration:none;font-weight:600;font-size:0.78rem;padding:6px 16px;border-radius:20px;background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.15);transition:all 0.2s;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#67e8f9">
+                        <path
+                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                    Được thiết kế bởi <span style="color:#f59e0b;font-weight:700;">Minh Đỗ</span>
+                </a>
+                <div
+                    style="position:absolute;bottom:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,rgba(34,211,238,0.2),rgba(245,158,11,0.15),transparent);">
+                </div>
+            </footer>
+        </div>
+    </main>
+
+    <button id="back-to-top" aria-label="Back to top">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+    </button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const mainScroll = document.getElementById('mainScroll');
+            const tocLinks = document.querySelectorAll('.toc-link');
+            const backToTop = document.getElementById('back-to-top');
+            const menuBtn = document.getElementById('menuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+
+            // Highlight code
+            document.querySelectorAll('pre code').forEach(b => hljs.highlightElement(b));
+
+            // Wrap tables
+            document.querySelectorAll('.prose table').forEach(t => {
+                if (!t.parentElement.classList.contains('table-wrap')) {
+                    const w = document.createElement('div');
+                    w.className = 'table-wrap';
+                    t.parentNode.insertBefore(w, t);
+                    w.appendChild(t);
+                }
+            });
+
+            // Scroll spy
+            function getEls() {
+                const r = [];
+                tocLinks.forEach(l => {
+                    const id = l.getAttribute('href').substring(1);
+                    const el = document.getElementById(id);
+                    if (el) r.push({ id, el });
+                });
+                return r;
+            }
+            const hEls = getEls();
+
+            function updateActive() {
+                const st = mainScroll.scrollTop;
+                st > 300 ? backToTop.classList.add('visible') : backToTop.classList.remove('visible');
+                let cur = '';
+                for (let i = hEls.length - 1; i >= 0; i--) {
+                    if (hEls[i].el.offsetTop <= st + 120) { cur = hEls[i].id; break; }
+                }
+                tocLinks.forEach(l => {
+                    l.getAttribute('href').substring(1) === cur ? l.classList.add('active') : l.classList.remove('active');
+                });
+            }
+            mainScroll.addEventListener('scroll', updateActive);
+            updateActive();
+
+            tocLinks.forEach(l => {
+                l.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const el = document.getElementById(this.getAttribute('href').substring(1));
+                    if (el) mainScroll.scrollTo({ top: el.offsetTop - 24, behavior: 'smooth' });
+                    if (window.innerWidth < 769) { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+                });
+            });
+
+            backToTop.addEventListener('click', () => mainScroll.scrollTo({ top: 0, behavior: 'smooth' }));
+
+            function toggleMenu() { sidebar.classList.toggle('open'); overlay.classList.toggle('show'); }
+            menuBtn.addEventListener('click', toggleMenu);
+            overlay.addEventListener('click', toggleMenu);
+        });
+    </script>
+</body>
+
+</html>
