@@ -578,12 +578,34 @@
                 padding: 28px 20px 60px;
             }
 
+            .sticky-hero {
+                position: relative;
+                padding: 20px 20px 16px;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                background: transparent;
+            }
+
+            .sticky-hero::after {
+                left: 20px;
+                right: 20px;
+            }
+
+            .sticky-hero h1 {
+                font-size: 1.3rem;
+            }
+
             .prose h1 {
                 font-size: 1.5rem;
             }
 
             .prose h2 {
                 font-size: 1.2rem;
+                scroll-margin-top: 16px;
+            }
+
+            .scroll-mt-8 {
+                scroll-margin-top: 16px;
             }
         }
     </style>
